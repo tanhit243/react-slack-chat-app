@@ -11,7 +11,8 @@ class Register extends React.Component {
             email: '',
             password: '',
             passwordConfirmation: '',
-            errors: []
+            errors: [],
+            loading: false
         };
 
         // This binding is necessary to make `this` work in the callback
@@ -58,8 +59,11 @@ class Register extends React.Component {
     }
 
     displayError(errors) {
-        console.log(errors.map((error, i) => <p key={i}>{error.message}</p>));
         return errors.map((error, i) => <p key={i}>{error.message}</p>);
+    }
+
+    handleInputError() {
+        
     }
 
     handleChange(event) {
@@ -67,23 +71,30 @@ class Register extends React.Component {
     }
 
     handleSubmit(event) {
+        event.preventDefault();
         if(this.isFormVaild()) {
-            event.preventDefault();
+            this.setState({loading: true});
             let email = event.target.email.value;
             let password = event.target.password.value;
             firebase
                 .auth()
                 .createUserWithEmailAndPassword(email,password)
                 .then(user => {
+                    this.setState({loading: false});
                     console.log(user);
                 })
                 .catch(error => {
                     console.log(error);
+                    this.setState({loading: false});
+                    this.setState({errors: [].concat(error)})
                 });
         }
     }
 
     render () {
+        //Khoi tao bien la qua
+        const {username, email, password, passwordConfirmation, errors, loading} = this.state;
+
         return (
             <Grid centered className='app'>
                 <GridColumn width='6'>
@@ -93,19 +104,19 @@ class Register extends React.Component {
                     </Header>
                     <Form onSubmit={this.handleSubmit}>
                         <Segment>
-                            <FormInput icon='user'  iconPosition='left' placeholder='Username' type='text' name='username' onChange={this.handleChange} value={this.state.username} />
-                            <FormInput icon='mail'  iconPosition='left' placeholder='Email' type='email' name='email' onChange={this.handleChange} value={this.state.email} />
-                            <FormInput icon='write' iconPosition='left' placeholder='Password' type='password' name='password' onChange={this.handleChange} vaule={this.state.password} />
-                            <FormInput icon='repeat' iconPosition='left' placeholder='Password Confirmation' type='password' name='passwordConfirmation' onChange={this.handleChange} value={this.state.passwordConfirmation} />
-                            <Button fluid color='orange'>Submit</Button>
+                            <FormInput icon='user' className={this.handleInputError()} iconPosition='left' placeholder='Username' type='text' name='username' onChange={this.handleChange} value={username} />
+                            <FormInput icon='mail'  iconPosition='left' placeholder='Email' type='email' name='email' onChange={this.handleChange} value={email} />
+                            <FormInput icon='write' iconPosition='left' placeholder='Password' type='password' name='password' onChange={this.handleChange} vaule={password} />
+                            <FormInput icon='repeat' iconPosition='left' placeholder='Password Confirmation' type='password' name='passwordConfirmation' onChange={this.handleChange} value={passwordConfirmation} />
+                            <Button loading={loading ? loading : false} fluid color='orange'>Submit</Button>
                         </Segment>
                     </Form>
                     {
-                        this.state.errors.length > 0 &&
+                        errors.length > 0 &&
                         (
                             <Message error>
                                 <Message.Header>Error</Message.Header>
-                                {this.displayError(this.state.errors)}                  
+                                {this.displayError(errors)}                  
                             </Message>
                         )
                     }
