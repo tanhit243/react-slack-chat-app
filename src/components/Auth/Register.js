@@ -62,8 +62,10 @@ class Register extends React.Component {
         return errors.map((error, i) => <p key={i}>{error.message}</p>);
     }
 
-    handleInputError() {
-        
+    handleInputError(errors,inputName) {
+        errors.some(function(error) {
+            return error.includes(inputName);
+        })
     }
 
     handleChange(event) {
@@ -104,7 +106,7 @@ class Register extends React.Component {
                     </Header>
                     <Form onSubmit={this.handleSubmit}>
                         <Segment>
-                            <FormInput icon='user' className={this.handleInputError()} iconPosition='left' placeholder='Username' type='text' name='username' onChange={this.handleChange} value={username} />
+                            <FormInput icon='user' className={this.handleInputError(errors,'email')} iconPosition='left' placeholder='Username' type='text' name='username' onChange={this.handleChange} value={username} />
                             <FormInput icon='mail'  iconPosition='left' placeholder='Email' type='email' name='email' onChange={this.handleChange} value={email} />
                             <FormInput icon='write' iconPosition='left' placeholder='Password' type='password' name='password' onChange={this.handleChange} vaule={password} />
                             <FormInput icon='repeat' iconPosition='left' placeholder='Password Confirmation' type='password' name='passwordConfirmation' onChange={this.handleChange} value={passwordConfirmation} />
