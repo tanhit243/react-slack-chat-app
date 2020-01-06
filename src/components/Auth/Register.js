@@ -2,6 +2,7 @@ import React from "react";
 import { Grid, Form, Segment, Button, Header, Message, Icon, GridColumn, FormInput } from "semantic-ui-react";
 import { Link } from 'react-router-dom';
 import firebase from '../../firebase';
+import md5 from 'md5';
 
 class Register extends React.Component {
     constructor(props) {
@@ -12,7 +13,8 @@ class Register extends React.Component {
             password: '',
             passwordConfirmation: '',
             errors: [],
-            loading: false
+            loading: false,
+            userRef: firebase.database().ref('users')
         };
 
         // This binding is necessary to make `this` work in the callback
@@ -22,6 +24,8 @@ class Register extends React.Component {
         this.isFormVaild = this.isFormVaild.bind(this);
         this.isPasswordVaild = this.isPasswordVaild.bind(this);
         this.displayError = this.displayError.bind(this);
+        this.checkAvailability = this.checkAvailability.bind(this);
+        this.saveUser = this.saveUser.bind(this);
     }
 
     isFormVaild() {
@@ -62,14 +66,24 @@ class Register extends React.Component {
         return errors.map((error, i) => <p key={i}>{error.message}</p>);
     }
 
-    handleInputError(errors,inputName) {
-        errors.some(function(error) {
-            return error.includes(inputName);
-        })
+    checkAvailability(errors,inputName) {
+        return errors.some(function(error) {
+            return error.message.toLowerCase().includes(inputName);
+        }) ?
+        'error'
+        :
+        '';
     }
 
     handleChange(event) {
         this.setState({ [event.target.name ]: event.target.value });
+    }
+
+    saveUser(userCreated) {
+        return this.state.userRef.child(userCreated.user.uid).set({
+            displayName: userCreated.user.displayName,
+            photoURL: userCreated.user.photoURL
+        });
     }
 
     handleSubmit(event) {
@@ -81,20 +95,40 @@ class Register extends React.Component {
             firebase
                 .auth()
                 .createUserWithEmailAndPassword(email,password)
-                .then(user => {
-                    this.setState({loading: false});
-                    console.log(user);
+                .then(userCreated => {
+                    console.log(userCreated);
+                    userCreated.user.updateProfile({
+                        displayName: this.state.username,
+                        photoURL: `https://www.gravatar.com/avatar/${md5(userCreated.user.email)}`
+                    })
+                    .then(() =>  {
+                        this.saveUser(userCreated)
+                        .then(() => {
+                            console.log('saved user');
+                        });
+                        this.setState({
+                            errors: [],
+                            loading: false
+                        });
+                    })
+                    .catch(error => {
+                        console.log(error);
+                        this.setState({
+                            errors: this.state.errors.concat(error),
+                            loading: false
+                        });
+                    });
                 })
                 .catch(error => {
-                    console.log(error);
-                    this.setState({loading: false});
-                    this.setState({errors: [].concat(error)})
+                    this.setState({
+                        errors: [].concat(error),
+                        loading: false
+                    });
                 });
         }
     }
 
     render () {
-        //Khoi tao bien la qua
         const {username, email, password, passwordConfirmation, errors, loading} = this.state;
 
         return (
@@ -106,14 +140,15 @@ class Register extends React.Component {
                     </Header>
                     <Form onSubmit={this.handleSubmit}>
                         <Segment>
-                            <FormInput icon='user' className={this.handleInputError(errors,'email')} iconPosition='left' placeholder='Username' type='text' name='username' onChange={this.handleChange} value={username} />
-                            <FormInput icon='mail'  iconPosition='left' placeholder='Email' type='email' name='email' onChange={this.handleChange} value={email} />
-                            <FormInput icon='write' iconPosition='left' placeholder='Password' type='password' name='password' onChange={this.handleChange} vaule={password} />
-                            <FormInput icon='repeat' iconPosition='left' placeholder='Password Confirmation' type='password' name='passwordConfirmation' onChange={this.handleChange} value={passwordConfirmation} />
+                            <FormInput icon='user' className={this.checkAvailability(errors,'user')} iconPosition='left' placeholder='Username' type='text' name='username' onChange={this.handleChange} value={username} />
+                            <FormInput icon='mail'  className={this.checkAvailability(errors,'email')} iconPosition='left' placeholder='Email' type='email' name='email' onChange={this.handleChange} value={email} />
+                            <FormInput icon='write' className={this.checkAvailability(errors,'password')} iconPosition='left' placeholder='Password' type='password' name='password' onChange={this.handleChange} vaule={password} />
+                            <FormInput icon='repeat' className={this.checkAvailability(errors,'password')} iconPosition='left' placeholder='Password Confirmation' type='password' name='passwordConfirmation' onChange={this.handleChange} value={passwordConfirmation} />
                             <Button loading={loading ? loading : false} fluid color='orange'>Submit</Button>
                         </Segment>
                     </Form>
                     {
+                        //use expresstion js with {}
                         errors.length > 0 &&
                         (
                             <Message error>
