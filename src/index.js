@@ -46,6 +46,10 @@ const mapStateFromProps = state => {
 }
 const Authentication = withRouter(connect(mapStateFromProps,{ setUser })(Root));
 
+//The connect() function connects a React component to a Redux store.
+const Authentication = withRouter(connect(mapStateFromProps,{ setUser })(Root)); 
+
+
 ReactDOM.render(
   <Provider store={store}>
     <Router>
