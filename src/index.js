@@ -16,10 +16,8 @@ import Spiner from './Spiner';
 
 class Root extends React.Component {
   componentDidMount() {
-    console.log(this.props.isloading );
     firebase.auth().onAuthStateChanged(user => {
       if(user) {
-        console.log(user);
         this.props.setUser(user);
         this.props.history.push('/');
       }
@@ -27,7 +25,7 @@ class Root extends React.Component {
   }
 
   render() {
-    return this.props.isloading ? <Spiner /> : (
+    return this.props.isLoading ? <Spiner /> : (
           <Switch>
               <Route exact path="/" component={App} />
               <Route path="/login">
@@ -39,9 +37,13 @@ class Root extends React.Component {
   }
 }
 const store = createStore(rootReducer,composeWithDevTools());
-const mapStateFromProps = state => ({
-  isloading: state.user.isloading
-})
+const mapStateFromProps = state => {
+  return(
+    {
+      isLoading: state.user.isLoading
+    }
+  )
+}
 const Authentication = withRouter(connect(mapStateFromProps,{ setUser })(Root));
 
 ReactDOM.render(
