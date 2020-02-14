@@ -11,7 +11,7 @@ import rootReducer from '../src/reducers';
 import { createStore } from 'redux';
 import { Provider, connect } from 'react-redux';
 import { composeWithDevTools } from 'redux-devtools-extension';
-import { setUser } from './actions';
+import { setUser, clearUser } from './actions';
 import Spiner from './Spiner';
 
 class Root extends React.Component {
@@ -20,6 +20,9 @@ class Root extends React.Component {
       if(user) {
         this.props.setUser(user);
         this.props.history.push('/');
+      } else {
+        this.props.history.push('/login');
+        this.props.clearUser();
       }
     })
   }
@@ -44,10 +47,9 @@ const mapStateFromProps = state => {
     }
   )
 }
-const Authentication = withRouter(connect(mapStateFromProps,{ setUser })(Root));
 
 //The connect() function connects a React component to a Redux store.
-const Authentication = withRouter(connect(mapStateFromProps,{ setUser })(Root)); 
+const Authentication = withRouter(connect(mapStateFromProps,{ setUser, clearUser })(Root)); 
 
 
 ReactDOM.render(
