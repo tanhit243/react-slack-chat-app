@@ -4,17 +4,22 @@ import { Grid, Header, Icon, Dropdown } from 'semantic-ui-react';
 
 class UserPanel extends React.Component {
     constructor(props){
-        super(props);
+        super();
+        
+        // this.state = {
+        //     user: props.currentUser
+        // }
 
         this.dropdownOptions = this.dropdownOptions.bind(this);
         this.handleSignout = this.handleSignout.bind(this);
     }
 
+
     dropdownOptions() {
         return [
             {
                 key: 'user',
-                text: <span>Signed in as <strong>User</strong></span>,
+                text: <span>Signed in as <strong>this.state.user.displayName</strong></span>,
                 disabled: true
             },
             {
@@ -38,6 +43,7 @@ class UserPanel extends React.Component {
     }
 
     render () {
+        console.log(this);
         return (
             <Grid>
                 <Grid.Column>
